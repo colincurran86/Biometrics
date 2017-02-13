@@ -1,58 +1,93 @@
 package fingerprint;
 
-import java.awt.FlowLayout;
-import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
-import javax.imageio.ImageIO;
-import javax.swing.ImageIcon;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.Statement;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
-public class Fingerprint{
-  public static void main(String args[])throws IOException{
-      
-   BufferedImage img = ImageIO.read(new File("C:\\Users\\colin\\Desktop\\GoodImage.bmp"));
-        ImageIcon icon=new ImageIcon(img);
-        JFrame frame=new JFrame();
-        frame.setLayout(new FlowLayout());
-        frame.setSize(400,400);
-        JLabel lbl=new JLabel();
-        lbl.setIcon(icon);
-        frame.add(lbl);
-        frame.setVisible(true);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-  }//end main
-  
-  
-  public void insertData(){
-      Connection c = null;
-      Statement stmt = null;
-      try {
-         Class.forName("org.postgresql.Driver");
-         c = DriverManager
-            .getConnection("jdbc:postgresql://localhost:5432/Student",
-            "postgres", "v5v36jwd");
-         c.setAutoCommit(false);
-         System.out.println("Opened database successfully!");
 
-         stmt = c.createStatement();
-         String sql = "INSERT INTO credentials (TNumber, Fingerprint) "
-               + "VALUES (T00058011, BLOB );";
-         stmt.executeUpdate(sql);
+public class Fingerprint {
 
-         stmt.close();
-         c.commit();
-         c.close();
-      } catch (Exception e) {
-         System.err.println( e.getClass().getName()+": "+ e.getMessage() );
-         System.exit(0);
-      }
-      System.out.println("Records created successfully");
-   }
-  
+    public static void main(String args[]) throws IOException, SQLException {
+        
+        Connection c = null;
+        Connection conn2 = null;
+        PreparedStatement pst = null;
+        
+
+        String tNumber = "t00058011";
+        String url = "jdbc:postgresql://localhost:5432/Student";
+        String user = "postgres";
+        String password = "v5v36jwd*";
+        
+        
+        
+        
+        try {
+            int id = 6;
+
+            c = DriverManager.getConnection(url, user, password);
+
+            File file = new File("C:\\Users\\colin\\Desktop\\GoodImage.bmp");
+            try (FileInputStream fis = new FileInputStream(file)) {
+                String stm = "INSERT INTO credentials(TNumber, Fingerprint) VALUES(?, ?)";
+                pst = c.prepareStatement(stm);
+                pst.setString(1, file.getName());
+                pst.setBinaryStream(2, fis, (int)file.length());
+                pst.setInt(1, id);
+                //pst.setString(2, tNumber);
+                pst.executeUpdate();
+                
+                pst.close();
+            }
+
+        } catch (SQLException ex) {
+            System.out.println("Exception " + ex);
+
+        } finally {
+
+            try {
+                if (pst != null) {
+                    pst.close();
+                }
+                if (c != null) {
+                    c.close();
+                }
+
+            } catch (SQLException ex) {
+                System.out.println("Exception " + ex);
+            }
+        }
+
+    }//end main
+
+    public void insert() throws SQLException, IOException {
+        Connection c = null;
+        File file = new File("C:\\Users\\colin\\Desktop\\GoodImage.bmp");
+        try (FileInputStream fis = new FileInputStream(file);
+                PreparedStatement ps = c.prepareStatement("INSERT INTO credentials VALUES (?, ?)")) {
+            ps.setString(1, file.getName());
+            ps.setBinaryStream(2, fis, (int) file.length());
+            ps.executeUpdate();
+            System.out.println("Image successfully inserted");
+        }
+    }
+
+    //To use the bytea data 
+    //type you should simply use the getBytes(), setBytes(), getBinaryStream(), or setBinaryStream() methods.
+    /* public void retreive() {
+        PreparedStatement ps = c.prepareStatement("SELECT img FROM images WHERE imgname = ?");
+        ps.setString(1, "myimage.gif");
+        ResultSet rs = ps.executeQuery();
+        while (rs.next()) {
+            byte[] imgBytes = rs.getBytes(1);
+            // use the data in some way here
+        }
+        rs.close();
+        ps.close();
+    }*/
 }//end class
