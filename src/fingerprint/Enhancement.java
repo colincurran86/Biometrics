@@ -1,57 +1,68 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package fingerprint;
 
+import Catalano.Imaging.Experimental.BernsenThreshold;
 import Catalano.Imaging.FastBitmap;
+import Catalano.Imaging.Filters.AdaptiveContrastEnhancement;
+import Catalano.Imaging.Filters.BinaryDilatation;
+import Catalano.Imaging.Filters.BinaryErosion;
+import Catalano.Imaging.Filters.BinaryOpening;
 import Catalano.Imaging.Filters.BradleyLocalThreshold;
+import Catalano.Imaging.Filters.CannyEdgeDetector;
+import Catalano.Imaging.Filters.ExtractBoundary;
+import Catalano.Imaging.Filters.FillHoles;
 import Catalano.Imaging.Filters.FourierTransform;
 import Catalano.Imaging.Filters.FrequencyFilter;
+import Catalano.Imaging.Filters.Threshold;
+import Catalano.Imaging.Filters.HistogramStretch;
 import Catalano.Imaging.Filters.Sharpen;
+import Catalano.Imaging.Filters.SobelEdgeDetector;
+import Catalano.Imaging.Filters.ZhangSuenThinning;
+import Catalano.Imaging.IProcessImage;
 import javax.swing.JOptionPane;
 
 /**
  *
- * @author colin
+ * @author colin curran
  */
 public class Enhancement {
 
     public static void main(String[] args) {
-        //load image in
-        FastBitmap fb = new FastBitmap("C:\\Users\\colin\\Desktop\\excellent1.bmp");
+        
+        /*
+        Load Image
+        Grayscale
+        Binarization
+        Thinning - Skeletonisation
+        
+        Minutiae Extraction
+        */
+      
+        //Load image in
+        FastBitmap fb = new FastBitmap("C:\\Users\\colin\\Desktop\\fingerprint.jpg");
         JOptionPane.showMessageDialog(null, fb.toIcon(), "Original Image", JOptionPane.PLAIN_MESSAGE);
         
-        //Sharpen
-        Sharpen s = new Sharpen();
-        s.applyInPlace(fb);
-        JOptionPane.showMessageDialog(null, fb.toIcon(), "Sharpened Image", JOptionPane.PLAIN_MESSAGE);
+    
         
-        
-        //convert to grayscale
+        //Grayscale
         fb.toGrayscale();
         JOptionPane.showMessageDialog(null, fb.toIcon(), "Grayscale Image", JOptionPane.PLAIN_MESSAGE);
         
-        //BradleyLocalThreshold filter
-        BradleyLocalThreshold brad = new BradleyLocalThreshold();
-        brad.applyInPlace(fb);
-        JOptionPane.showMessageDialog(null, fb.toIcon(), "Bradley Image", JOptionPane.PLAIN_MESSAGE);
-
-        /*perform Fourier transform
-        FourierTransform ft = new FourierTransform(fb);
-        ft.Forward();
-        fb = ft.toFastBitmap();
-        JOptionPane.showMessageDialog(null, fb.toIcon(), "Fourier Transform", JOptionPane.PLAIN_MESSAGE);
-
-        FrequencyFilter ff = new FrequencyFilter(0, 60);
-        ff.ApplyInPlace(ft);
-        fb = ft.toFastBitmap();
-        JOptionPane.showMessageDialog(null, fb.toIcon(), "Frequency Filter", JOptionPane.PLAIN_MESSAGE);
-
-        ft.Backward();
-        fb = ft.toFastBitmap();
-        JOptionPane.showMessageDialog(null, fb.toIcon(), "Result", JOptionPane.PLAIN_MESSAGE);*/
+        
+       //Binarize
+        Threshold t = new Threshold(165);  //0-255
+        t.applyInPlace(fb);
+        JOptionPane.showMessageDialog(null, fb.toIcon(), "Binary Image", JOptionPane.PLAIN_MESSAGE);
+        
+        //Extract Boundary from Image
+        ExtractBoundary eb = new ExtractBoundary();
+        eb.applyInPlace(fb);
+        JOptionPane.showMessageDialog(null, fb.toIcon(), "Extract Image", JOptionPane.PLAIN_MESSAGE);
+        
+        //Thinning to 1 pixel width
+        ZhangSuenThinning zs = new ZhangSuenThinning();
+        zs.applyInPlace(fb);
+        JOptionPane.showMessageDialog(null, fb.toIcon(), "ZhangSuen Thinned Image", JOptionPane.PLAIN_MESSAGE);
+        
     }
-
 }
