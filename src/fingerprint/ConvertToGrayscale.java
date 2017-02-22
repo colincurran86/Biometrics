@@ -6,11 +6,8 @@ package fingerprint;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
-
 import java.io.*;
-
 import javax.imageio.ImageIO;
-import javax.swing.JOptionPane;
 
 public class ConvertToGrayscale {
 
@@ -21,7 +18,7 @@ public class ConvertToGrayscale {
    public ConvertToGrayscale() {
    
       try {
-        //read originalImage in & get width & height 
+        //read original image in & get width & height of image
          File input = new File("C:\\Users\\\\colin\\Desktop\\excellent1.bmp");
          originalImage = ImageIO.read(input);
          width = originalImage.getWidth();
@@ -33,12 +30,17 @@ public class ConvertToGrayscale {
             
                //get RGB values of image
                Color c = new Color(getOriginalImage().getRGB(j, i));
-               int red = (int)(c.getRed() * 0.299);
-               int green = (int)(c.getGreen() * 0.587);
-               int blue = (int)(c.getBlue() *0.114);
-               Color newColor = new Color(red+green+blue,red+green+blue,red+green+blue);
                
+               //Y = 0.299 R + 0.587 G + 0.114 B Formula      
+               int red = (int)(c.getRed() * 0.299);  
+               int green = (int)(c.getGreen() * 0.587);    
+               int blue = (int)(c.getBlue() *0.114);
+              
+               //Y = (R+R+R+B+G+G+G+G)>>3
+               Color newColor = new Color(red+green+blue,red+green+blue,red+green+blue);    
+               //sets the new rgb vales to the new image
                originalImage.setRGB(j,i,newColor.getRGB());
+              
             }
          }
          
