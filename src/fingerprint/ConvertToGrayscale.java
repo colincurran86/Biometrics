@@ -9,11 +9,12 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import javax.imageio.ImageIO;
 
-public class ConvertToGrayscale {
+public final class ConvertToGrayscale {
 
     private BufferedImage originalImage;
-    private int width;
-    private int height;
+    private int imageWidth;
+    private int imageHeight;
+    //Luminance values
     private float redValue = 0.299f;
     private float greenValue = 0.587f;
     private float blueValue = 0.114f;
@@ -21,32 +22,28 @@ public class ConvertToGrayscale {
     public ConvertToGrayscale() {
 
         try {
-            //read original image in & get width & height of image
+            //read original image in & get imageWidth & imageHeight of image
             File input = new File("C:\\Users\\\\colin\\Desktop\\test.jpg");
             originalImage = ImageIO.read(input);
-            width = originalImage.getWidth();
-            height = originalImage.getHeight();
+            imageWidth = originalImage.getWidth();
+            imageHeight = originalImage.getHeight();
 
-            for (int i = 0; i < height; i++) {
-
-                for (int j = 0; j < width; j++) {
+            for (int i = 0; i < imageHeight; i++) {
+                for (int j = 0; j < imageWidth; j++) {
 
                     //get RGB values of image
-                    Color c = new Color(getOriginalImage().getRGB(j, i));
+                    Color originalColor = new Color(getOriginalImage().getRGB(j, i));
 
-                    //RGB Luminance value = 0.3 R + 0.59 G + 0.11 B
-                    //Y = 0.299 R + 0.587 G + 0.114 B Formula      
-                    int red = (int) (c.getRed() * redValue);
-                    int green = (int) (c.getGreen() * greenValue);
-                    int blue = (int) (c.getBlue() * blueValue);
-
-                    //Y = (R+R+R+B+G+G+G+G)>>3
+                    //RGB Luminance formula = 0.3 Red + 0.59 Green + 0.11 Blue    
+                    int red = (int) (originalColor.getRed() * redValue);
+                    int green = (int) (originalColor.getGreen() * greenValue);
+                    int blue = (int) (originalColor.getBlue() * blueValue);
+                    
                     Color newColor = new Color(red + green + blue, red + green + blue, red + green + blue);
                     //sets the new rgb vales to the new image
                     originalImage.setRGB(j, i, newColor.getRGB());
-
-                }
-            }
+                }//end width
+            }//end height
 
             File output = new File("C:\\Users\\colin\\Desktop\\grayscaled.jpg");
             ImageIO.write(originalImage, "bmp", output);
@@ -55,37 +52,37 @@ public class ConvertToGrayscale {
             System.out.println(ex.toString());
         }
     }
-
+    
     static public void main(String args[]) throws Exception {
         ConvertToGrayscale obj = new ConvertToGrayscale();
     }
 
     /**
-     * @return the width
+     * @return the imageWidth
      */
-    public int getWidth() {
-        return width;
+    public int getImageWidth() {
+        return imageWidth;
     }
 
     /**
-     * @param width the width to set
+     * @param imageWidth the imageWidth to set
      */
-    public void setWidth(int width) {
-        this.width = width;
+    public void setImageWidth(int imageWidth) {
+        this.imageWidth = imageWidth;
     }
 
     /**
-     * @return the height
+     * @return the imageHeight
      */
-    public int getHeight() {
-        return height;
+    public int getImageHeight() {
+        return imageHeight;
     }
 
     /**
-     * @param height the height to set
+     * @param imageHeight the imageHeight to set
      */
-    public void setHeight(int height) {
-        this.height = height;
+    public void setImageHeight(int imageHeight) {
+        this.imageHeight = imageHeight;
     }
 
     /**
