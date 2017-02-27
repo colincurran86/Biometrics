@@ -1,8 +1,9 @@
 
 /**
- * Image binarization - Otsu algorithm
+ * Image binarization - Otsu algorithm and Histogram
  *
- * Code adopted from: Bostjan Cigan (http://zerocool.is-a-geek.net)
+ * Code adopted from: Bostjan Cigan (http://zerocool.is-a-geek.net) &
+ * http://www.walrusvision.com/wordpress/otsu-thresholder-algorithm-works/
  *
  * separate the pixels into two clusters according to the threshold
  * find the mean of each cluster
@@ -27,17 +28,15 @@ public class Binarization {
     private static BufferedImage original, grayscale, binarized;
 
     public static void main(String[] args) throws IOException {
-        File inputImage = new File("C:\\Users\\colin\\Desktop\\fingerprint.jpg");
+        File inputImage = new File("C:\\Users\\colin\\Desktop\\grayscale.jpg");
         original = ImageIO.read(inputImage);
         //convert to grayscale
         grayscale = toGray(original);
         //binarize
         binarized = binarize(grayscale);
 
-        //save output
-        File outputImage = new File("C:\\Users\\colin\\Desktop\\fingerprintBinary.jpg");
+        File outputImage = new File("C:\\Users\\colin\\Desktop\\grayscaleToBinary.jpg");
         ImageIO.write(binarized, "jpg", outputImage);
-        //System.out.println("New Binarized image successfully created!!");
     }//end main 
 
     
@@ -95,37 +94,38 @@ public class Binarization {
     */
     
     private static int otsuTreshold(BufferedImage original) {
-        //pixels seperated into 2 clusters according to the threshold Cluster A & Cluster B
+        //pixels seperated into 2 clusters according to the threshold 
         //find the mean of each Cluster
         //get histogram intensity values of original image pixels
-        int[] histogram = imageHistogram(original); //calculates maximum intensity on each pixel = 256
+        int[] histogram = imageHistogram(original); //calculates maximum intensity on each pixel
         int totalPixelsInImage = original.getHeight() * original.getWidth(); 
         
         //calculate the mean value for the overall Histogram
         float meanTotal = 0;
         for (int i = 0; i < 256; i++) {
             meanTotal += i * histogram[i];
-            System.out.println("MEAN TOTAl for HIstogram " + meanTotal);
         }
 
         // The probability of the first class occurrence
         float meanCurrent = 0;
         // The probability of the second class occurrence
-        int omega0 = 0;
-        int omega1 = 0;
+        int backgroundWeight = 0;
+        int foregroundWeight = 0;
 
         float maximumVariance = 0;
         int thresholdValue = 0;
 
         for (int k = 0; k < 256; k++) {
-             // Compute omega0 for current k
-            omega0 += histogram[k];
-            if (omega0 == 0) {
+             // Compute background weight for current k
+            backgroundWeight += histogram[k];
+            if (backgroundWeight == 0) {
                 continue;
             }
-            omega1 = totalPixelsInImage - omega0;
+            // Compute foreground weight for current k
+            //foreground = total - background
+            foregroundWeight = totalPixelsInImage - backgroundWeight;
 
-            if (omega1 == 0) {
+            if (foregroundWeight == 0) {
                 break;
             }
             
@@ -133,12 +133,13 @@ public class Binarization {
             meanCurrent += (float) (k * histogram[k]);
             
             // The probability of the first class occurrence
-            float mean0 = meanCurrent / (float)omega0;
-             
-            float mean1 = (meanTotal - meanCurrent) / omega1;
+            float mean0 = meanCurrent / (float)backgroundWeight;
+            
+            //mean value for class1
+            float mean1 = (meanTotal - meanCurrent) / foregroundWeight;
             
             // Calculate the between-class variance [sigmasquareB]
-            float varianceBetween = (float) omega0 * (float) omega1 * (mean0 - mean1) * (mean0 - mean1);
+            float varianceBetween = (float) backgroundWeight * (float) foregroundWeight * (mean0 - mean1) * (mean0 - mean1);
 
             //if varBetween is greater than 0 then set the max threshold to the varBetween value
             if (varianceBetween > maximumVariance) {
@@ -155,7 +156,6 @@ public class Binarization {
 
         //gets otsu threshold of image which is 134
         int threshold = otsuTreshold(original);
-        //System.out.println("THRESHOLD " + threshold);
 
         BufferedImage binarized = new BufferedImage(original.getWidth(), original.getHeight(), original.getType());
 
