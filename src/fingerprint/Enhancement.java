@@ -1,7 +1,6 @@
 
 package fingerprint;
 
-import Catalano.Imaging.Experimental.BernsenThreshold;
 import Catalano.Imaging.FastBitmap;
 import Catalano.Imaging.Filters.AdaptiveContrastEnhancement;
 import Catalano.Imaging.Filters.BinaryDilatation;

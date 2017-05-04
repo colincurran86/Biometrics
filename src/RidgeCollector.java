@@ -40,12 +40,12 @@ public class RidgeCollector {
      
         //int[][] imageDataInput = new int[imageDataInput.length][imageDataInput[0].length];
         
-        for (int y = -1; y < imageDataInput.length; y++) {
+        for (int y = 0; y < imageDataInput.length; y++) {
             System.out.println("Outer loop Y");
             for (int x = 0; x < imageDataInput[y].length; x++) {
                 //System.out.println("Inner loop X");
-                System.out.println("Values are["+y+"]["+x+"] is "+imageDataInput[y][x]);
-                if (imageDataInput[y - 1][x] == 0 && imageDataInput[y - 1][x + 1] == 1) {
+                System.out.println("Values are["+y+"]["+x+"] is ");
+                /*if (imageDataInput[y - 1][x] == 0 && imageDataInput[y - 1][x + 1] == 1) {
                     p.add(new Point(y - 1, x + 1));
                 }
                 if (imageDataInput[y - 1][x + 1] == 0 && imageDataInput[y][x + 1] == 1) {
@@ -68,7 +68,7 @@ public class RidgeCollector {
                 }
                 if (imageDataInput[y - 1][x - 1] == 0 && imageDataInput[y - 1][x] == 1) {
                     p.add(new Point(y - 1, x));
-                }
+                }*/
             }//end width loop
         }//end height loop
 
