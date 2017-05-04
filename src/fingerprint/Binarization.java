@@ -17,27 +17,60 @@
  * and arrays of length 256) and the easiness of the implementation.
  */
 
+import Catalano.Imaging.Filters.ZhangSuenThinning;
 import java.awt.Color;
+import java.awt.FlowLayout;
+import java.awt.Point;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 
 public class Binarization {
 
-    private static BufferedImage original, grayscale, binarized;
+    private static BufferedImage image, original, grayscale, binarized;
 
     public static void main(String[] args) throws IOException {
-        File inputImage = new File("C:\\Users\\colin\\Desktop\\grayscale.jpg");
-        original = ImageIO.read(inputImage);
+        //pre-thinned through catalano framework
+        BufferedImage image = ImageIO.read(new File("C:\\Users\\t00058011\\Desktop\\original.png"));
+        //original = ImageIO.read(inputImage);
+        
         //convert to grayscale
-        grayscale = toGray(original);
+        grayscale = toGray(image);
         //binarize
-        binarized = binarize(grayscale);
+        binarized = binarize(image);
+        
+        JFrame frame = new JFrame();
+        frame.getContentPane().setLayout(new FlowLayout());
+        frame.getContentPane().add(new JLabel(new ImageIcon(binarized)));
+        frame.setSize(400,400);
+        frame.setVisible(true);
+        
+        //int[][] binarizedImage = new int[binarized.getHeight()][binarized.getWidth()];
+        byte[] pixels = ((DataBufferByte)binarized.getRaster().getDataBuffer()).getData();
+        for(byte pixel : pixels){
+            System.out.println("Pixel" + pixel);
+        }
+        //skeletonize image
+        ZhangSuenThinning zs = new ZhangSuenThinning();
+       // zs.applyInPlace(binarized);
+      //  JOptionPane.showMessageDialog(null, fb.toIcon(), "ZhangSuen Thinned Image", JOptionPane.PLAIN_MESSAGE);
 
-        File outputImage = new File("C:\\Users\\colin\\Desktop\\grayscaleToBinary.jpg");
-        ImageIO.write(binarized, "jpg", outputImage);
-    }//end main 
+       // File outputImage = new File("C:\\Users\\colin\\Desktop\\grayscaleToBinary.jpg");
+       // ImageIO.write(binarized, "jpg", outputImage);
+        
+       //convert to matrix
+        
+        extractRidgeEndings(binarized);
+        
+        
+    }//end main //////////////////////
 
     
     // The luminance method to covert to Grayscale
@@ -45,7 +78,7 @@ public class Binarization {
     private static BufferedImage toGray(BufferedImage original) {
         int alpha, red, green, blue;
         int newPixel;
-
+        System.out.println("GRAYSCALED!!");
         BufferedImage luminance = new BufferedImage(original.getWidth(), original.getHeight(), original.getType());
 
         for (int row = 0; row < original.getWidth(); row++) {
@@ -83,6 +116,7 @@ public class Binarization {
                 histogram[red]++;
             }
         }
+        System.out.println("HISTOGRAM VALUE IS" + histogram);
         return histogram;
     }
 
@@ -147,15 +181,17 @@ public class Binarization {
                 thresholdValue = k;
             }
         }
+        System.out.println("THRESHOLD VALUE IS: "+ thresholdValue);
         return thresholdValue;
     }
 
     private static BufferedImage binarize(BufferedImage original) {
         int red;
         int newPixel;
-
+        System.out.println("BINARIZED");
         //gets otsu threshold of image which is 134
         int threshold = otsuTreshold(original);
+        System.out.print("THRESHOLD "+threshold);
 
         BufferedImage binarized = new BufferedImage(original.getWidth(), original.getHeight(), original.getType());
 
@@ -175,6 +211,7 @@ public class Binarization {
                 binarized.setRGB(row, col, newPixel);
             }
         }
+        System.out.println("Image successfully binarized");
         return binarized;
     }
 
@@ -190,5 +227,89 @@ public class Binarization {
         newPixel += blue;
 
         return newPixel;
+    }
+    
+    
+    
+    public static ArrayList<Point> extractRidgeEndings(BufferedImage binarizedImage) {
+
+        System.out.println("Extract Method!");
+        ArrayList<Point> p = new ArrayList<>();
+     
+        //int[][] imageDataInput = new int[imageDataInput.length][imageDataInput[0].length];
+        
+        for (int y = 0; y < binarizedImage.getHeight(); y++) {
+            System.out.println("Outer loop Y");
+            for (int x = 0; x < binarizedImage.getWidth(); x++) {
+                System.out.println("Inner loop X");
+              
+                   // -1 = white
+                   // -16777216 = black
+                //System.out.println("Values at["+y+"]["+x+"] is " + imageDataInput[y][x]);
+                /*if (imageDataInput[y - 1][x] == 0 && imageDataInput[y - 1][x + 1] == 1) {
+                    p.add(new Point(y - 1, x + 1));
+                }
+                if (imageDataInput[y - 1][x + 1] == 0 && imageDataInput[y][x + 1] == 1) {
+                    p.add(new Point(y, x + 1));
+                }
+                if (imageDataInput[y][x + 1] == 0 && imageDataInput[y + 1][x + 1] == 1) {
+                    p.add(new Point(y + 1, x + 1));
+                }
+                if (imageDataInput[y + 1][x + 1] == 0 && imageDataInput[y + 1][x] == 1) {
+                    p.add(new Point(y + 1, x));
+                }
+                if (imageDataInput[y + 1][x] == 0 && imageDataInput[y + 1][x - 1] == 1) {
+                    p.add(new Point(y + 1, x - 1));
+                }
+                if (imageDataInput[y + 1][x - 1] == 0 && imageDataInput[y][x - 1] == 1) {
+                    p.add(new Point(y, x - 1));
+                }
+                if (imageDataInput[y][x - 1] == 0 && imageDataInput[y - 1][x - 1] == 1) {
+                    p.add(new Point(y - 1, x - 1));
+                }
+                if (imageDataInput[y - 1][x - 1] == 0 && imageDataInput[y - 1][x] == 1) {
+                    p.add(new Point(y - 1, x));
+                }*/
+            }//end width loop
+        }//end height loop
+        
+        for (int y = 0; y < binarizedImage.getHeight(); y++) {
+            System.out.println("Outer loop Y");
+            for (int x = 0; x < binarizedImage.getWidth(); x++) {
+                System.out.println("Inner loop X");
+                System.out.println("BLAH: " + binarizedImage.getRGB(x, y));
+                
+                   // -1 = white
+                   // -16777216 = black
+                //System.out.println("Values at["+y+"]["+x+"] is " + imageDataInput[y][x]);
+                /*if (imageDataInput[y - 1][x] == 0 && imageDataInput[y - 1][x + 1] == 1) {
+                    p.add(new Point(y - 1, x + 1));
+                }
+                if (imageDataInput[y - 1][x + 1] == 0 && imageDataInput[y][x + 1] == 1) {
+                    p.add(new Point(y, x + 1));
+                }
+                if (imageDataInput[y][x + 1] == 0 && imageDataInput[y + 1][x + 1] == 1) {
+                    p.add(new Point(y + 1, x + 1));
+                }
+                if (imageDataInput[y + 1][x + 1] == 0 && imageDataInput[y + 1][x] == 1) {
+                    p.add(new Point(y + 1, x));
+                }
+                if (imageDataInput[y + 1][x] == 0 && imageDataInput[y + 1][x - 1] == 1) {
+                    p.add(new Point(y + 1, x - 1));
+                }
+                if (imageDataInput[y + 1][x - 1] == 0 && imageDataInput[y][x - 1] == 1) {
+                    p.add(new Point(y, x - 1));
+                }
+                if (imageDataInput[y][x - 1] == 0 && imageDataInput[y - 1][x - 1] == 1) {
+                    p.add(new Point(y - 1, x - 1));
+                }
+                if (imageDataInput[y - 1][x - 1] == 0 && imageDataInput[y - 1][x] == 1) {
+                    p.add(new Point(y - 1, x));
+                }*/
+            }//end width loop
+        }//end height loop
+
+        System.out.println("Points found \n" + p);
+        return p;
     }
 }//end class
