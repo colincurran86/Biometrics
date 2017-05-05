@@ -17,6 +17,7 @@
  * and arrays of length 256) and the easiness of the implementation.
  */
 
+import Catalano.Imaging.FastBitmap;
 import Catalano.Imaging.Filters.ZhangSuenThinning;
 import java.awt.Color;
 import java.awt.FlowLayout;
@@ -30,44 +31,42 @@ import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 
 public class Binarization {
 
     private static BufferedImage image, original, grayscale, binarized;
 
     public static void main(String[] args) throws IOException {
-        //pre-thinned through catalano framework
-        BufferedImage image = ImageIO.read(new File("C:\\Users\\t00058011\\Desktop\\original.png"));
-        //original = ImageIO.read(inputImage);
-        
-        //convert to grayscale
+        //load original image
+        BufferedImage image = ImageIO.read(new File("C:\\Users\\colin\\Desktop\\1_8.png"));
+   
+        //convert original to grayscale
         grayscale = toGray(image);
-        //binarize
+        //binarize grayscale image
         binarized = binarize(image);
         
+        //convert binarized image to FastBitmap format
+        FastBitmap fb = new FastBitmap(binarized);
+ 
+        //skeletonze image
+        ZhangSuenThinning zs = new ZhangSuenThinning();
+        zs.applyInPlace(fb);
+        
+        //display skeleton image
         JFrame frame = new JFrame();
         frame.getContentPane().setLayout(new FlowLayout());
-        frame.getContentPane().add(new JLabel(new ImageIcon(binarized)));
+        frame.getContentPane().add(new JLabel(new ImageIcon(fb.toBufferedImage())));
         frame.setSize(400,400);
         frame.setVisible(true);
         
-        //int[][] binarizedImage = new int[binarized.getHeight()][binarized.getWidth()];
-        byte[] pixels = ((DataBufferByte)binarized.getRaster().getDataBuffer()).getData();
+        
+       /* byte[] pixels = ((DataBufferByte)binarized.getRaster().getDataBuffer()).getData();
         for(byte pixel : pixels){
-            System.out.println("Pixel" + pixel);
-        }
-        //skeletonize image
-        ZhangSuenThinning zs = new ZhangSuenThinning();
-       // zs.applyInPlace(binarized);
-      //  JOptionPane.showMessageDialog(null, fb.toIcon(), "ZhangSuen Thinned Image", JOptionPane.PLAIN_MESSAGE);
-
-       // File outputImage = new File("C:\\Users\\colin\\Desktop\\grayscaleToBinary.jpg");
-       // ImageIO.write(binarized, "jpg", outputImage);
+            System.out.println("Pixel " + pixel);
+        }*/
         
-       //convert to matrix
-        
-        extractRidgeEndings(binarized);
+       //extract ridges
+        //extractRidgeEndings(binarized);
         
         
     }//end main //////////////////////
@@ -181,7 +180,7 @@ public class Binarization {
                 thresholdValue = k;
             }
         }
-        System.out.println("THRESHOLD VALUE IS: "+ thresholdValue);
+        System.out.println("THRESHOLD VALUE IS: " + thresholdValue);
         return thresholdValue;
     }
 
@@ -191,7 +190,7 @@ public class Binarization {
         System.out.println("BINARIZED");
         //gets otsu threshold of image which is 134
         int threshold = otsuTreshold(original);
-        System.out.print("THRESHOLD "+threshold);
+        System.out.print("THRESHOLD " + threshold);
 
         BufferedImage binarized = new BufferedImage(original.getWidth(), original.getHeight(), original.getType());
 
@@ -239,9 +238,9 @@ public class Binarization {
         //int[][] imageDataInput = new int[imageDataInput.length][imageDataInput[0].length];
         
         for (int y = 0; y < binarizedImage.getHeight(); y++) {
-            System.out.println("Outer loop Y");
+           // System.out.println("Outer loop Y");
             for (int x = 0; x < binarizedImage.getWidth(); x++) {
-                System.out.println("Inner loop X");
+               // System.out.println("Inner loop X");
               
                    // -1 = white
                    // -16777216 = black
@@ -276,11 +275,11 @@ public class Binarization {
         for (int y = 0; y < binarizedImage.getHeight(); y++) {
             System.out.println("Outer loop Y");
             for (int x = 0; x < binarizedImage.getWidth(); x++) {
-                System.out.println("Inner loop X");
+               // System.out.println("Inner loop X");
                 System.out.println("BLAH: " + binarizedImage.getRGB(x, y));
                 
-                   // -1 = white
-                   // -16777216 = black
+                   // 0 = white
+                   // -41 = black
                 //System.out.println("Values at["+y+"]["+x+"] is " + imageDataInput[y][x]);
                 /*if (imageDataInput[y - 1][x] == 0 && imageDataInput[y - 1][x + 1] == 1) {
                     p.add(new Point(y - 1, x + 1));
